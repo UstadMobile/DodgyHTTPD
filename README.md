@@ -15,7 +15,8 @@ you use to run actual servers; and then tell it if you'd like it to
 mess with the requests.
 
 ```
-java -jar <pathtojar> -p <startingPort> -d <rootDirectory>
+mvn compile
+mvn exec:java -Dexec.mainClass="com.ustadmobile.dodgyhttpd.DodgyHTTPDServer" -Dexec.args='-d "/path/to/filesdir" -p 8065'
 ```
 
 Where starting port is the port number you want the control server to
