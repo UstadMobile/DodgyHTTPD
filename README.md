@@ -5,6 +5,11 @@ command.  It's purpose in life is to help test if code is robust
 enough to handle interrupted connections, slow connections, loss of 
 connectivity etc.
 
+There are plenty of nice http mock interfaces to test interacting with
+APIs: there seems to be an underlying assumption you can reach the 
+remote end.  I needed some quick to test when that's not the case, 
+including with large(ish) file downloads etc.
+
 It's built on the excellent NanoHTTPD.  It has one master server that
 you use to run actual servers; and then tell it if you'd like it to 
 mess with the requests.
