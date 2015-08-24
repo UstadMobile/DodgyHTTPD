@@ -21,8 +21,10 @@ package com.ustadmobile.dodgyhttpd;
 
 import fi.iki.elonen.NanoHTTPD;
 import fi.iki.elonen.ServerRunner;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 import org.json.JSONObject;
@@ -78,7 +80,22 @@ public class DodgyHTTPDServer extends NanoHTTPD {
             ourBaseDir);
         System.out.println("Starting DodgyHTTPD control server on http://localhost:" 
             + startingPortNum + "/");
-        ServerRunner.executeInstance(DodgyHTTPDServer.controlServer);
+        
+        DodgyHTTPDServer.controlServer.start();
+        
+        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+        
+        System.out.println("Type stop [enter] to stop or hit ctrl+c");
+        boolean keepRunning = true;
+        while(keepRunning) {
+            String input = in.readLine();
+            if(input != null && input.equals("stop")) {
+                keepRunning = false;
+            }
+        }
+        
+        
+        DodgyHTTPDServer.controlServer.stop();
     }
 
     /**
