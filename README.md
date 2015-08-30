@@ -85,6 +85,7 @@ Save a test result:
 example:
 ```
 POST http://localhost:8060 with parameters
+ action - "saveresults" - Required
  numPass - Number tests passed
  numFail - Number of tests failed
  logtext - Complete log text to be saved
