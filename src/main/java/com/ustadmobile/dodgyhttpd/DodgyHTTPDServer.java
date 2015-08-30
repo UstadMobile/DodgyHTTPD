@@ -23,8 +23,10 @@ import fi.iki.elonen.NanoHTTPD;
 import fi.iki.elonen.ServerRunner;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 import org.json.JSONObject;
@@ -48,6 +50,8 @@ public class DodgyHTTPDServer extends NanoHTTPD {
     
     private int nextPortNum;
     
+    private File saveResultsDir = null;
+    
     
     /**
      * Creates a new control server
@@ -66,11 +70,15 @@ public class DodgyHTTPDServer extends NanoHTTPD {
     public static void main(String[] args) throws IOException{
         String baseDir = ".";
         
+        File saveResultsDirArg = new File(".");
+        
         for(int i = 0; i < args.length; i++) {
             if(args[i].equalsIgnoreCase("-p") || args[i].equalsIgnoreCase("--port")) {
                 startingPortNum = Integer.parseInt(args[i+1]);
             }else if(args[i].equalsIgnoreCase("-d") || args[i].equalsIgnoreCase("--dir")) {
                 baseDir = args[i + 1];
+            }else if(args[i].equalsIgnoreCase("-r") || args[i].equalsIgnoreCase("--resultdir")) {
+                saveResultsDirArg = new File(args[i+1]);
             }
         }
         
@@ -81,6 +89,7 @@ public class DodgyHTTPDServer extends NanoHTTPD {
         System.out.println("Starting DodgyHTTPD control server on http://localhost:" 
             + startingPortNum + "/");
         
+        DodgyHTTPDServer.controlServer.setSaveResultsDir(saveResultsDirArg);
         DodgyHTTPDServer.controlServer.start();
         
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
@@ -97,6 +106,10 @@ public class DodgyHTTPDServer extends NanoHTTPD {
         
         DodgyHTTPDServer.controlServer.stop();
     }
+    
+    public void setSaveResultsDir(File saveResultsDir) {
+        this.saveResultsDir = saveResultsDir;
+    }    
 
     /**
      * Create a new DodgyHTTPDServer
@@ -172,6 +185,44 @@ public class DodgyHTTPDServer extends NanoHTTPD {
         return true;
     }
     
+    public boolean saveResults(int numPassed, int numFailed, String device, String log) {
+        String filePrefix = (device == null ? "" : device + "-");
+        String resultFilename = filePrefix + "result";
+        String logFilename = filePrefix + "testresults.txt";
+        
+        String result = numFailed == 0 ? "PASS" : "FAIL";
+        
+        OutputStream resultOut = null;
+        OutputStream logOut = null;
+        boolean savedOK = false;
+        try {
+            File resultFile = new File(this.saveResultsDir, resultFilename);
+            resultOut = new FileOutputStream(resultFile);
+            resultOut.write(result.getBytes("UTF-8"));
+            resultOut.flush();
+            
+            File logFile = new File(this.saveResultsDir, logFilename);
+            logOut = new FileOutputStream(logFile);
+            logOut.write(log.getBytes("UTF-8"));
+            logOut.flush();
+            savedOK = true;
+        }catch(IOException e) {
+            System.err.println("Excpetion saving results:");
+            e.printStackTrace();
+        }finally {
+            if(resultOut != null) {
+                try { resultOut.close(); }
+                catch(IOException e) {}
+            }
+            
+            if(logOut != null) {
+                try { logOut.close(); }
+                catch(IOException e) {}
+            }
+        }
+        return savedOK;
+    }
+    
     
     /**
      * Main method listening for server setup requests over HTTP
@@ -181,14 +232,28 @@ public class DodgyHTTPDServer extends NanoHTTPD {
      */
     @Override
     public Response serve(IHTTPSession session) {
+        Map<String,String> parameters = session.getParms();
+        
+        if(session.getMethod().equals(Method.POST)) {
+            parameters = new HashMap<>();
+            try {
+                session.parseBody(parameters);
+            }catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
+        
         String action = session.getParms().get("action");
         String message = "";
+        
+        
         
         if(action == null) {
             message = "DodgyHTTPDServer: see the docs for how to talk to me";
         }else {
             try {
                 JSONObject response = new JSONObject();
+                boolean hasFailed = false;
                 if(action.equals("newserver")) {
                     response.put("status", "OK");
                     response.put("port", startNewServer());
@@ -204,12 +269,19 @@ public class DodgyHTTPDServer extends NanoHTTPD {
                     int portNum = Integer.parseInt(session.getParms().get("port"));
                     boolean setOK = setServerParams(portNum, session.getParms());
                     response.put("set", setOK);
+                }else if(action.equals("saveresults")) {
+                    int numPassed = Integer.parseInt(session.getParms().get("numPass"));
+                    int numFailed = Integer.parseInt(session.getParms().get("numFail"));
+                    String device = session.getParms().get("device");
+                    String logTxt = session.getParms().get("logtext");
+                    hasFailed = !saveResults(numPassed, numFailed, device, logTxt);
                 }
 
                 String jsonStr = response.toString();
             
-                return newFixedLengthResponse(Response.Status.OK, "application/json", 
-                    jsonStr);
+                return newFixedLengthResponse(
+                    hasFailed ? Response.Status.INTERNAL_ERROR  : Response.Status.OK, 
+                        "application/json", jsonStr);
             }catch(IOException e) {
                 return newFixedLengthResponse(Response.Status.INTERNAL_ERROR, 
                     "text/plain", e.toString());

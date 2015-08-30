@@ -33,7 +33,7 @@ startingPort default is 8060
 Start a new server:
 
 ```
-GET http://localhost:8060/?action=startnewserver
+GET http://localhost:8060/?action=newserver
 ```
 Returns
 ```
@@ -80,6 +80,21 @@ speedlimit: The maximum download speed in bytes per second (e.g. 16K)
 forceerrorafter: After serving this number of bytes the server will cut out.  This is useful to test resume abilities with unreliable connections.
 port: the port on which the server is running
 
+Save a test result:
+
+example:
+```
+POST http://localhost:8060 with parameters
+ numPass - Number tests passed
+ numFail - Number of tests failed
+ logtext - Complete log text to be saved
+ device - (optional) device name to be used with filename of results to be saved
+```
+
+Will save (devicename-)result which will contain PASS or FAIL depending on if numFail > 0 and
+(devicename)-testresults.txt which will contain the logtext sent
+
+Will be saved to the directory specified by -r or --resultdir in the command line arguments
 
 
 
