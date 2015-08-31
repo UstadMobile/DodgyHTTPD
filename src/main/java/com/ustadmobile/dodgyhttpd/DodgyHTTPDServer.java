@@ -244,7 +244,7 @@ public class DodgyHTTPDServer extends NanoHTTPD {
             e.printStackTrace();
         }
         
-        
+        System.out.println("Request: " + session.getUri());
         String action = session.getParms().get("action");
         String message = "";
         
