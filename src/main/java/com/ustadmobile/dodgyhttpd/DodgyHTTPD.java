@@ -87,6 +87,7 @@ public class DodgyHTTPD extends SimpleWebServer {
         InputStream newIn = new DodgyInputStream(data, speedLimit, forceErrorAfter);
         Response r = super.newFixedLengthResponse(status, mimeType, newIn, totalBytes); 
         r.setKeepAlive(false);
+        r.setGzipEncoding(false);
         return r;
     }
     

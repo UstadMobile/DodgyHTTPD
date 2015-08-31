@@ -290,7 +290,7 @@ public class DodgyHTTPDServer extends NanoHTTPD {
                     hasFailed ? Response.Status.INTERNAL_ERROR  : Response.Status.OK, 
                         "application/json", jsonStr);
                 r.setKeepAlive(false);
-                
+                r.setGzipEncoding(false);
                 return r;
             }catch(IOException e) {
                 return newFixedLengthResponse(Response.Status.INTERNAL_ERROR, 
