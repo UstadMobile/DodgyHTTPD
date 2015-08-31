@@ -286,9 +286,12 @@ public class DodgyHTTPDServer extends NanoHTTPD {
 
                 String jsonStr = response.toString();
             
-                return newFixedLengthResponse(
+                Response r = newFixedLengthResponse(
                     hasFailed ? Response.Status.INTERNAL_ERROR  : Response.Status.OK, 
                         "application/json", jsonStr);
+                r.setKeepAlive(false);
+                
+                return r;
             }catch(IOException e) {
                 return newFixedLengthResponse(Response.Status.INTERNAL_ERROR, 
                     "text/plain", e.toString());
