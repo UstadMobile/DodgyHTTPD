@@ -236,16 +236,20 @@ public class DodgyHTTPDServer extends NanoHTTPD {
      */
     @Override
     public Response serve(IHTTPSession session) {
+        Map<String, String> filesMap = new HashMap<>();
+        
         try {
-            if(session.getMethod().equals(NanoHTTPD.Method.POST)) {
-                session.parseBody(new HashMap());
+            if(session.getMethod().equals(NanoHTTPD.Method.POST) || session.getMethod().equals(NanoHTTPD.Method.PUT)) {
+                session.parseBody(filesMap);
             }
         }catch(Exception e) {
             e.printStackTrace();
         }
         
+        Map<String, String> parms = session.getParms();
+        
         System.out.println("Request: " + session.getUri());
-        String action = session.getParms().get("action");
+        String action = parms.get("action");
         String message = "";
         
         
@@ -260,22 +264,22 @@ public class DodgyHTTPDServer extends NanoHTTPD {
                     response.put("status", "OK");
                     response.put("port", startNewServer());
                 }else if(action.equals("startserver")) {
-                    int portNum = Integer.parseInt(session.getParms().get("port"));
+                    int portNum = Integer.parseInt(parms.get("port"));
                     boolean started = startServer(portNum);
                     response.put("started", started);
                 }else if(action.equals("stopserver")) {
-                    int portNum = Integer.parseInt(session.getParms().get("port"));
+                    int portNum = Integer.parseInt(parms.get("port"));
                     boolean stopped = stopServer(portNum);
                     response.put("stopped", stopped);
                 }else if(action.equals("setparams")) {                    
-                    int portNum = Integer.parseInt(session.getParms().get("port"));
+                    int portNum = Integer.parseInt(parms.get("port"));
                     boolean setOK = setServerParams(portNum, session.getParms());
                     response.put("set", setOK);
                 }else if(action.equals("saveresults")) {
-                    int numPassed = Integer.parseInt(session.getParms().get("numPass"));
-                    int numFailed = Integer.parseInt(session.getParms().get("numFail"));
-                    String device = session.getParms().get("device");
-                    String logTxt = session.getParms().get("logtext");
+                    int numPassed = Integer.parseInt(parms.get("numPass"));
+                    int numFailed = Integer.parseInt(parms.get("numFail"));
+                    String device = parms.get("device");
+                    String logTxt = parms.get("logtext");
                     hasFailed = !saveResults(numPassed, numFailed, device, logTxt);
                     response.put("saved", !hasFailed);
                 }
