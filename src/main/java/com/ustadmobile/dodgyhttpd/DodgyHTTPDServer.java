@@ -208,8 +208,10 @@ public class DodgyHTTPDServer extends NanoHTTPD {
             logOut.write(log.getBytes("UTF-8"));
             logOut.flush();
             savedOK = true;
+            System.out.println("Saved results to " + resultFilename + " / " +
+                    logFilename);
         }catch(IOException e) {
-            System.err.println("Excpetion saving results:");
+            System.err.println("Exception saving results:");
             e.printStackTrace();
         }finally {
             if(resultOut != null) {
