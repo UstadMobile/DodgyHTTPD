@@ -238,6 +238,7 @@ public class DodgyHTTPDServer extends NanoHTTPD {
     public Response serve(IHTTPSession session) {
         Map<String, String> filesMap = new HashMap<>();
         
+        /*
         try {
             if(session.getMethod().equals(NanoHTTPD.Method.POST) || session.getMethod().equals(NanoHTTPD.Method.PUT)) {
                 session.parseBody(filesMap);
@@ -245,6 +246,7 @@ public class DodgyHTTPDServer extends NanoHTTPD {
         }catch(Exception e) {
             e.printStackTrace();
         }
+        */
         
         Map<String, String> parms = session.getParms();
         
@@ -275,14 +277,14 @@ public class DodgyHTTPDServer extends NanoHTTPD {
                     int portNum = Integer.parseInt(parms.get("port"));
                     boolean setOK = setServerParams(portNum, session.getParms());
                     response.put("set", setOK);
-                }else if(action.equals("saveresults")) {
+                }/*else if(action.equals("saveresults")) {
                     int numPassed = Integer.parseInt(parms.get("numPass"));
                     int numFailed = Integer.parseInt(parms.get("numFail"));
                     String device = parms.get("device");
                     String logTxt = parms.get("logtext");
                     hasFailed = !saveResults(numPassed, numFailed, device, logTxt);
                     response.put("saved", !hasFailed);
-                }
+                }*/
 
                 String jsonStr = response.toString();
             
