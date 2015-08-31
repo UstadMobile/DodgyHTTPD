@@ -248,6 +248,11 @@ public class DodgyHTTPDServer extends NanoHTTPD {
         }
         */
         
+        if(session.getMethod().equals(Method.POST)) {
+            System.out.println("Who posting to me?");
+        }
+        
+        
         Map<String, String> parms = session.getParms();
         
         System.out.println("Request: " + session.getUri());
