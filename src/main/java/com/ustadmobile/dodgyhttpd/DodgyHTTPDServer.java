@@ -25,9 +25,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.json.JSONObject;
 
@@ -232,13 +234,14 @@ public class DodgyHTTPDServer extends NanoHTTPD {
      */
     @Override
     public Response serve(IHTTPSession session) {
-        Map<String,String> parameters = session.getParms();
-        
         try {
-            session.parseBody(parameters);
+            if(session.getMethod().equals(NanoHTTPD.Method.POST)) {
+                session.parseBody(new HashMap());
+            }
         }catch(Exception e) {
             e.printStackTrace();
         }
+        
         
         String action = session.getParms().get("action");
         String message = "";
