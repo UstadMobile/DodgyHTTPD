@@ -85,7 +85,9 @@ public class DodgyHTTPD extends SimpleWebServer {
     @Override
     public Response newFixedLengthResponse(Response.IStatus status, String mimeType, InputStream data, long totalBytes) {
         InputStream newIn = new DodgyInputStream(data, speedLimit, forceErrorAfter);
-        return super.newFixedLengthResponse(status, mimeType, newIn, totalBytes); //To change body of generated methods, choose Tools | Templates.
+        Response r = super.newFixedLengthResponse(status, mimeType, newIn, totalBytes); 
+        r.setKeepAlive(false);
+        return r;
     }
     
 }
