@@ -275,6 +275,7 @@ public class DodgyHTTPDServer extends NanoHTTPD {
                     String device = session.getParms().get("device");
                     String logTxt = session.getParms().get("logtext");
                     hasFailed = !saveResults(numPassed, numFailed, device, logTxt);
+                    response.put("saved", !hasFailed);
                 }
 
                 String jsonStr = response.toString();
