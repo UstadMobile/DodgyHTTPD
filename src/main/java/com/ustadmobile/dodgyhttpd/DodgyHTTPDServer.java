@@ -234,13 +234,10 @@ public class DodgyHTTPDServer extends NanoHTTPD {
     public Response serve(IHTTPSession session) {
         Map<String,String> parameters = session.getParms();
         
-        if(session.getMethod().equals(Method.POST)) {
-            parameters = new HashMap<>();
-            try {
-                session.parseBody(parameters);
-            }catch(Exception e) {
-                e.printStackTrace();
-            }
+        try {
+            session.parseBody(parameters);
+        }catch(Exception e) {
+            e.printStackTrace();
         }
         
         String action = session.getParms().get("action");
