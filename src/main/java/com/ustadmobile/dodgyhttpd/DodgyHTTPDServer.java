@@ -20,7 +20,6 @@
 package com.ustadmobile.dodgyhttpd;
 
 import fi.iki.elonen.NanoHTTPD;
-import fi.iki.elonen.ServerRunner;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -238,7 +237,7 @@ public class DodgyHTTPDServer extends NanoHTTPD {
     public Response serve(IHTTPSession session) {
         Map<String, String> filesMap = new HashMap<>();
         
-        /*
+        
         try {
             if(session.getMethod().equals(NanoHTTPD.Method.POST) || session.getMethod().equals(NanoHTTPD.Method.PUT)) {
                 session.parseBody(filesMap);
@@ -246,11 +245,9 @@ public class DodgyHTTPDServer extends NanoHTTPD {
         }catch(Exception e) {
             e.printStackTrace();
         }
-        */
         
-        if(session.getMethod().equals(Method.POST)) {
-            System.out.println("Who posting to me?");
-        }
+        System.out.println("Control Request: (" + session.getMethod() + ") : " + 
+            session.getUri());
         
         
         Map<String, String> parms = session.getParms();
@@ -282,30 +279,29 @@ public class DodgyHTTPDServer extends NanoHTTPD {
                     int portNum = Integer.parseInt(parms.get("port"));
                     boolean setOK = setServerParams(portNum, session.getParms());
                     response.put("set", setOK);
-                }/*else if(action.equals("saveresults")) {
+                }else if(action.equals("saveresults")) {
                     int numPassed = Integer.parseInt(parms.get("numPass"));
                     int numFailed = Integer.parseInt(parms.get("numFail"));
                     String device = parms.get("device");
                     String logTxt = parms.get("logtext");
                     hasFailed = !saveResults(numPassed, numFailed, device, logTxt);
                     response.put("saved", !hasFailed);
-                }*/
+                }
 
                 String jsonStr = response.toString();
-            
-                Response r = newFixedLengthResponse(
-                    hasFailed ? Response.Status.INTERNAL_ERROR  : Response.Status.OK, 
-                        "application/json", jsonStr);
+                
+                Response r = new Response(hasFailed ? Response.Status.INTERNAL_ERROR  : Response.Status.OK, 
+                    "application/json", jsonStr);
                 return r;
             }catch(IOException e) {
-                return newFixedLengthResponse(Response.Status.INTERNAL_ERROR, 
-                    "text/plain", e.toString());
+                return new Response(Response.Status.INTERNAL_ERROR, "text/plain",
+                        e.toString());
             }
             
         }
         
-        return newFixedLengthResponse(Response.Status.OK, "text/plain", message);
-        
+        Response r =new Response(Response.Status.OK, "text/plain", message);
+        return r;
     }
     
     

@@ -81,11 +81,16 @@ public class DodgyHTTPD extends SimpleWebServer {
     public void setForceErrorAfter(int forceErrorAfter) {
         this.forceErrorAfter = forceErrorAfter;
     }
-    
+
     @Override
-    public Response newFixedLengthResponse(Response.IStatus status, String mimeType, InputStream data, long totalBytes) {
-        InputStream newIn = new DodgyInputStream(data, speedLimit, forceErrorAfter);
-        Response r = super.newFixedLengthResponse(status, mimeType, newIn, totalBytes); 
+    public Response serve(IHTTPSession session) {
+        System.out.println("Asset Request: (" + session.getMethod() + ") : " + 
+            session.getUri());
+        Response r = super.serve(session); 
+        InputStream newIn = new DodgyInputStream(r.getData(), speedLimit, 
+                forceErrorAfter);
+        r.setData(newIn);
+        
         return r;
     }
     
