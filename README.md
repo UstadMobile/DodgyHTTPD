@@ -25,6 +25,7 @@ Optional arguments
 -d --dir Base directory for assets that get served over http
 -r --resultdir Directory to save result logs and raw socket logs to
 -a -- rawport the start opening raw sockets on (default 3330)
+-c --codelookup a properties file for error codelookups of what was sent to a rawport
 ```
 
 Where starting port is the port number you want the control server to
@@ -125,3 +126,9 @@ that socket will be logged to the result save directory under raw-(client).log.
 
 The client name must include only a-z,  A-Z, 0-9 or -.
 
+Because there are limits on the bandwidth available to devices and the size of
+the executables; it's not nice to have to put hundreds of fixed messages to transfer
+again and again.  If you send :codelu:<NUMBER> e.g. codelu:500 and have a property
+500 in the codelookup argument when starting the server; the log will include
+both the code and the message to make it easier to read (whilst tearing your
+hair out about whatever is causing the error).

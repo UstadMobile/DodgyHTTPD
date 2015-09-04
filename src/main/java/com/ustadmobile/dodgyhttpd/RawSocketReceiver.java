@@ -28,6 +28,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Properties;
 
 /**
  *
@@ -47,11 +48,16 @@ public class RawSocketReceiver implements Runnable{
     
     private File logFile;
     
-    public RawSocketReceiver(int port, String clientName, File logFile) throws IOException{
+    private static final String CODELU = ":codelu:";
+    
+    private Properties codeLookups;
+    
+    public RawSocketReceiver(int port, String clientName, File logFile, Properties codeLookups) throws IOException{
         this.port = port;
         this.clientName = clientName;
         this.logFile = logFile;
         running = false;
+        this.codeLookups = codeLookups;
     }
     
     public boolean startListening() {
@@ -78,7 +84,28 @@ public class RawSocketReceiver implements Runnable{
             out = new BufferedWriter(new FileWriter(logFile));
 
             String inLine;
+            StringBuilder codeSb;
             while((inLine = in.readLine()) != null) {
+                int codeLuPos = inLine.indexOf(CODELU);
+                if(codeLuPos != -1) {
+                    codeSb = new StringBuilder();
+                    int endPos;
+                    for(endPos = codeLuPos + CODELU.length(); endPos < inLine.length(); endPos++) {
+                        if(!Character.isWhitespace(inLine.charAt(endPos))) {
+                            codeSb.append(inLine.charAt(endPos));
+                        }else {
+                            break;
+                        }
+                    }
+                    
+                    String codeDesc = codeLookups.getProperty(codeSb.toString(), 
+                            "");
+                    inLine = inLine.substring(0, codeLuPos) + "Code: " + codeSb.toString() 
+                            + ": " + codeDesc + " " 
+                            + inLine.substring(codeLuPos + CODELU.length()+codeSb.length());
+                }
+                
+                
                 out.write(inLine);
                 out.write('\n');
                 out.flush();

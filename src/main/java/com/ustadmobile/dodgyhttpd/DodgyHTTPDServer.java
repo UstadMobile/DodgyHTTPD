@@ -22,6 +22,7 @@ package com.ustadmobile.dodgyhttpd;
 import fi.iki.elonen.NanoHTTPD;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,6 +31,7 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import org.json.JSONObject;
 
 
@@ -55,6 +57,8 @@ public class DodgyHTTPDServer extends NanoHTTPD {
     
     private File saveResultsDir = null;
     
+    private Properties codeLookups;
+    
     
     /**
      * Creates a new control server
@@ -63,17 +67,19 @@ public class DodgyHTTPDServer extends NanoHTTPD {
      * @param port Port on which to listen
      * @param baseDir Directory from which we will serve files
      */
-    public DodgyHTTPDServer(String host, int port, File baseDir) {
+    public DodgyHTTPDServer(String host, int port, File baseDir, Properties codeLookups) {
         super(host, port);
         nextPortNum = port+1;
         this.baseDir= baseDir;
         operatingServers = new HashMap<>();
+        this.codeLookups = codeLookups;
     }
     
     public static void main(String[] args) throws IOException{
         String baseDir = ".";
         
         File saveResultsDirArg = new File(".");
+        Properties codeLookups  = new Properties();
         
         for(int i = 0; i < args.length; i++) {
             if(args[i].equalsIgnoreCase("-p") || args[i].equalsIgnoreCase("--port")) {
@@ -84,13 +90,15 @@ public class DodgyHTTPDServer extends NanoHTTPD {
                 saveResultsDirArg = new File(args[i+1]);
             }else if(args[i].equalsIgnoreCase("-a") || args[i].equalsIgnoreCase("--rawport")) {
                 startingRawPortNum = Integer.parseInt(args[i+1]);
+            }else if(args[i].equalsIgnoreCase("-c") || args[i].equalsIgnoreCase("--codelookup")) {
+                codeLookups.load(new FileInputStream(args[i+1]));
             }
         }
         
         
         File ourBaseDir = new File(baseDir);
         DodgyHTTPDServer.controlServer = new DodgyHTTPDServer(null, startingPortNum,
-            ourBaseDir);
+            ourBaseDir, codeLookups);
         System.out.println("Starting DodgyHTTPD control server on http://localhost:" 
             + startingPortNum + "/");
         
@@ -306,7 +314,7 @@ public class DodgyHTTPDServer extends NanoHTTPD {
                     File logFile = new File(saveResultsDir, 
                             "raw-" + clientName + ".log");
                     RawSocketReceiver rawSock = new RawSocketReceiver(rawPort, 
-                        clientName, logFile);
+                        clientName, logFile, codeLookups);
                     hasFailed = !rawSock.startListening();
                     response.put("port", rawPort);
                     response.put("status", !hasFailed ? "OK" : "Fail");
