@@ -19,6 +19,14 @@ mvn compile
 mvn exec:java -Dexec.mainClass="com.ustadmobile.dodgyhttpd.DodgyHTTPDServer" -Dexec.args='-d "/path/to/filesdir" -p 8065'
 ```
 
+Optional arguments
+```
+-p --port Main control listening port (default 8065)
+-d --dir Base directory for assets that get served over http
+-r --resultdir Directory to save result logs and raw socket logs to
+-a -- rawport the start opening raw sockets on (default 3330)
+```
+
 Where starting port is the port number you want the control server to
 listen to and rootDirectory is the path from which to serve files. Each
 new server created will be listening on startingPort+1, +2, etc.
@@ -98,16 +106,22 @@ Will save (devicename-)result which will contain PASS or FAIL depending on if nu
 Will be saved to the directory specified by -r or --resultdir in the command line arguments
 
 
+Open a raw socket listener+logger
 
+This can be handy for devices (e.g. J2ME) that lack their own real debug logging
 
+example:
+```
+GET http://localhost:8060?action=newrawserver&client=nokia5000
+```
 
+returns:
+```
+{'port' : 3330, 'status' : 'OK'}
+```
 
+A socket will be opened on the port in the json response.  Whatever is sent to
+that socket will be logged to the result save directory under raw-(client).log.
 
-
-
-
-
-
-
-
+The client name must include only a-z,  A-Z, 0-9 or -.
 

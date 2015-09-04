@@ -45,6 +45,8 @@ public class DodgyHTTPDServer extends NanoHTTPD {
     
     public static int startingPortNum = 8060;
     
+    public static int startingRawPortNum = 3330;
+    
     private File baseDir;
     
     private static DodgyHTTPDServer controlServer;
@@ -80,6 +82,8 @@ public class DodgyHTTPDServer extends NanoHTTPD {
                 baseDir = args[i + 1];
             }else if(args[i].equalsIgnoreCase("-r") || args[i].equalsIgnoreCase("--resultdir")) {
                 saveResultsDirArg = new File(args[i+1]);
+            }else if(args[i].equalsIgnoreCase("-a") || args[i].equalsIgnoreCase("--rawport")) {
+                startingRawPortNum = Integer.parseInt(args[i+1]);
             }
         }
         
@@ -226,7 +230,6 @@ public class DodgyHTTPDServer extends NanoHTTPD {
         return savedOK;
     }
     
-    
     /**
      * Main method listening for server setup requests over HTTP
      * 
@@ -286,6 +289,27 @@ public class DodgyHTTPDServer extends NanoHTTPD {
                     String logTxt = parms.get("logtext");
                     hasFailed = !saveResults(numPassed, numFailed, device, logTxt);
                     response.put("saved", !hasFailed);
+                }else if(action.equals("newrawserver")) {
+                    String clientName = parms.get("client");
+                    StringBuilder clientSB  = new StringBuilder();
+                    char ch;
+                    for(int i = 0; i < clientName.length(); i++) {
+                        ch = clientName.charAt(i);
+                        if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9') || ch == '-') {
+                            clientSB.append(ch);
+                        }
+                    }
+                    clientName = clientSB.toString();
+                    
+                    int rawPort = DodgyHTTPDServer.startingRawPortNum;
+                    DodgyHTTPDServer.startingRawPortNum++;
+                    File logFile = new File(saveResultsDir, 
+                            "raw-" + clientName + ".log");
+                    RawSocketReceiver rawSock = new RawSocketReceiver(rawPort, 
+                        clientName, logFile);
+                    hasFailed = !rawSock.startListening();
+                    response.put("rawport", rawPort);
+                    response.put("status", !hasFailed ? "OK" : "Fail");
                 }
 
                 String jsonStr = response.toString();
