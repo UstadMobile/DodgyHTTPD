@@ -308,7 +308,7 @@ public class DodgyHTTPDServer extends NanoHTTPD {
                     RawSocketReceiver rawSock = new RawSocketReceiver(rawPort, 
                         clientName, logFile);
                     hasFailed = !rawSock.startListening();
-                    response.put("rawport", rawPort);
+                    response.put("port", rawPort);
                     response.put("status", !hasFailed ? "OK" : "Fail");
                 }
 
