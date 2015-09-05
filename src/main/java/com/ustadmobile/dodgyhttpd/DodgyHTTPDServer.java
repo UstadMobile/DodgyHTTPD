@@ -114,6 +114,8 @@ public class DodgyHTTPDServer extends NanoHTTPD {
             if(input != null && input.equals("stop")) {
                 keepRunning = false;
             }
+            try { Thread.sleep(1000); }
+            catch(InterruptedException e) {}
         }
         
         
